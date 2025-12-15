@@ -2,8 +2,9 @@
   // Skip if already subscribed (check localStorage)
   if (localStorage.getItem('hasSubscribed') === 'true') return;
 
-  // Overlay avec effet de fond "goutte"
-  const overlay = document.createElement('div');
+  function initGate() {
+    // Overlay avec effet de fond "goutte"
+    const overlay = document.createElement('div');
   overlay.style = `
     position:fixed;top:0;left:0;width:100%;height:100%;
     background: rgba(255,255,255,0.1);
@@ -93,4 +94,12 @@
   };
 
   document.body.appendChild(overlay);
+  }
+
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGate);
+  } else {
+    initGate();
+  }
 })();
