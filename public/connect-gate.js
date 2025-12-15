@@ -1,5 +1,6 @@
 (function () {
-  if (localStorage.getItem('hasSubscribed')) return;
+  // Skip if already subscribed (check localStorage)
+  if (localStorage.getItem('hasSubscribed') === 'true') return;
 
   // Overlay avec effet de fond "goutte"
   const overlay = document.createElement('div');
