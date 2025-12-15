@@ -1,20 +1,25 @@
 # Universal Connect
 
-Widget JavaScript universel pour collecter des emails depuis n'importe quel site web, avec backend Vercel.
+Widget JavaScript universel pour collecter des emails depuis n'importe quel site web, avec backend Vercel et MongoDB.
 
 ## 📁 Structure du projet
 
 ```
 universal-connect/
 ├── api/
-│   ├── subscribe.js      # API d'inscription (POST)
-│   └── export.js         # Export CSV des abonnés (GET)
+│   ├── subscribe.js         # API d'inscription (POST)
+│   ├── export.js            # Export CSV des abonnés (GET)
+│   └── subscribers-list.js  # Liste des abonnés (GET)
 ├── public/
-│   ├── connect-widget.js # Widget JS à embarquer
-│   └── admin.html        # Interface admin
-├── subscribers.json      # Stockage local des emails
-├── vercel.json           # Configuration Vercel
-├── .vercelignore         # Fichiers ignorés au déploiement
+│   ├── index.html           # Page de test
+│   ├── connect-widget.js    # Bouton rond glossy (haut droite)
+│   ├── connect-gate.js      # Barrière d'accès obligatoire
+│   └── admin.html           # Interface admin
+├── vercel.json              # Configuration Vercel
+├── .env.example             # Template variables d'environnement
+├── .vercelignore            # Fichiers ignorés au déploiement
+├── .gitignore
+├── package.json
 └── README.md
 ```
 
@@ -26,20 +31,28 @@ universal-connect/
 
 | Variable | Description |
 |----------|-------------|
-| `RESEND_API_KEY` | Clé API [Resend](https://resend.com) pour l'envoi d'emails |
+| `MONGODB_URI` | URI de connexion MongoDB Atlas |
+| `MONGODB_DB` | Nom de la base de données (défaut: `connect`) |
+| `MONGODB_COLL` | Nom de la collection (défaut: `subscribers`) |
 | `EXPORT_SECRET` | Mot de passe pour accéder à l'export CSV |
 
 4. **Déploie !**
 
 ## 📦 Intégration du Widget
 
-Ajoute ce script sur n'importe quel site :
-
+### Bouton rond glossy (haut droite)
 ```html
-<script src="https://TON_PROJET.vercel.app/connect-widget.js"></script>
+<script src="https://universal-connect.vercel.app/connect-widget.js" async></script>
 ```
 
-Un bouton "Connect" apparaîtra en bas à droite. Au clic, l'utilisateur entre son email et est inscrit automatiquement.
+### Barrière d'accès obligatoire (overlay)
+```html
+<script src="https://universal-connect.vercel.app/connect-gate.js" async></script>
+```
+
+### Intégration WordPress / Breakdance
+1. Va dans **Breakdance > Settings > Custom Code** ou utilise le plugin **WPCode**
+2. Colle le script dans le **Footer**
 
 ## 🔧 API Endpoints
 
@@ -60,6 +73,10 @@ Inscrit un nouvel email.
 { "status": "success" }
 ```
 
+### GET `/api/subscribers-list`
+
+Retourne la liste des abonnés (JSON).
+
 ### GET `/api/export?auth=EXPORT_SECRET`
 
 Exporte tous les abonnés en CSV.
@@ -71,7 +88,7 @@ Exporte tous les abonnés en CSV.
 
 Accède à l'interface admin via :
 ```
-https://TON_PROJET.vercel.app/admin.html
+https://universal-connect.vercel.app/admin.html
 ```
 
 Fonctionnalités :
@@ -79,34 +96,30 @@ Fonctionnalités :
 - Liste des abonnés
 - Export CSV
 
-⚠️ **Important** : Modifie le mot de passe admin dans `public/admin.html` (variable `AUTH`) avant le déploiement.
+⚠️ **Important** : Modifie les mots de passe dans `public/admin.html` avant le déploiement :
+- `ADMIN_PASSWORD` : mot de passe de connexion
+- `EXPORT_SECRET` : secret pour l'export CSV
 
-## 📧 Emails de confirmation
+## 🍃 Base de données MongoDB
 
-Les emails de confirmation sont envoyés automatiquement via [Resend](https://resend.com).
-
-N'oublie pas de :
-1. Créer un compte sur Resend
-2. Vérifier ton domaine d'envoi
-3. Mettre à jour l'adresse `from` dans `api/subscribe.js`
-
-## 📝 Configuration
-
-### vercel.json
-
-Le fichier `vercel.json` configure le routing des API :
-
+Les emails sont stockés dans MongoDB Atlas avec la structure :
 ```json
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/subscribe.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/subscribe", "dest": "/api/subscribe.js" }
-  ]
+  "email": "user@example.com",
+  "source": "monsite.com",
+  "subscribed_at": "2025-12-15T12:00:00.000Z"
 }
 ```
+
+## 📝 Liens utiles
+
+- **Page de test** : https://universal-connect.vercel.app/
+- **Admin** : https://universal-connect.vercel.app/admin.html
+- **GitHub** : https://github.com/onlymatt43/UNIVERSAL-CONNECT
+
+## 📄 Licence
+
+MIT
 
 ## 🛡️ Sécurité
 
