@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – Liste d'abonnés</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin: 0.5rem 0;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔐 Connexion admin</h2>
+  <input type="password" id="password" placeholder="Mot de passe admin">
+  <button onclick="login()">Se connecter</button>
+
+  <div id="adminSection" style="display:none;">
+    <h3>📋 Liste des abonnés</h3>
+    <button onclick="exportCSV()">📤 Exporter CSV</button>
+    <ul id="subscriberList"></ul>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = 'monmotdepasse';
+    const EXPORT_SECRET = 'supersecret2025'; // même que dans Vercel
+
+    function login() {
+      const pw = document.getElementById('password').value;
+      if (pw === ADMIN_PASSWORD) {
+        document.getElementById('adminSection').style.display = 'block';
+        loadData();
+      } else {
+        alert('Mot de passe incorrect');
+      }
+    }
+
+    async function loadData() {
+      const res = await fetch('/api/subscribers-list');
+      const data = await res.json();
+      const list = document.getElementById('subscriberList');
+      list.innerHTML = '';
+      data.forEach(sub => {
+        const li = document.createElement('li');
+        li.textContent = `${sub.email} – ${sub.source} – ${sub.subscribed_at}`;
+        list.appendChild(li);
+      });
+    }
+
+    function exportCSV() {
+      window.location.href = `/api/export?auth=${EXPORT_SECRET}`;
+    }
+  </script>
+</body>
+</html>

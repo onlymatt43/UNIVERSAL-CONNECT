@@ -1,0 +1,22 @@
+{
+  "name": "universal-connect",
+  "version": "1.0.0",
+  "description": "Widget JavaScript universel pour collecter des emails depuis n'importe quel site web",
+  "main": "api/subscribe.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "email",
+    "subscribe",
+    "widget",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mongodb": "^6.3.0",
+    "resend": "^2.0.0"
+  }
+}
