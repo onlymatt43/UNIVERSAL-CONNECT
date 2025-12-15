@@ -70,7 +70,7 @@
       return;
     }
 
-    fetch('https://<TON_DEPLOIEMENT>.vercel.app/api/subscribe', {
+    fetch('https://universal-connect.vercel.app/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
