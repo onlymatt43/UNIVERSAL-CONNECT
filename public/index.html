@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Universal Connect – Test</title>
+</head>
+<body style="font-family: sans-serif; padding: 2rem;">
+  <h1>🚀 Universal Connect</h1>
+  <p>Entrez votre email pour vous inscrire :</p>
+
+  <input type="email" id="email" placeholder="Votre email" style="padding:10px; font-size:16px; width:300px;" />
+  <button onclick="subscribe()" style="padding:10px 20px; font-size:16px;">S'inscrire</button>
+
+  <p id="message" style="margin-top: 1rem; color: green;"></p>
+
+  <script>
+    function subscribe() {
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message');
+
+      if (!email) {
+        message.textContent = "Veuillez entrer un email.";
+        message.style.color = "red";
+        return;
+      }
+
+      fetch("https://universal-connect.vercel.app/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "index.html" })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          message.textContent = "Inscription réussie ✅";
+          message.style.color = "green";
+        } else {
+          message.textContent = "Erreur : " + (data.error || "inconnue");
+          message.style.color = "red";
+        }
+      })
+      .catch(() => {
+        message.textContent = "Erreur réseau.";
+        message.style.color = "red";
+      });
+    }
+  </script>
+</body>
+</html>
