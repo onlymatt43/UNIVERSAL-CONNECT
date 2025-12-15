@@ -1,12 +1,15 @@
 (function () {
-  // Skip if already subscribed
-  if (localStorage.getItem('hasSubscribed') === 'true') return;
+  console.log('[connect-gate] Script loaded');
+  if (localStorage.getItem('hasSubscribed') === 'true') {
+    console.log('[connect-gate] Déjà inscrit, overlay non affiché');
+    return;
+  }
 
   function initGate() {
+    console.log('[connect-gate] DOM prêt, création overlay');
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;';
 
-    // Créer des cercles flous aléatoires
     for (var i = 0; i < 10; i++) {
       var circle = document.createElement('div');
       var size = Math.random() * 100 + 50;
@@ -38,7 +41,7 @@
         error.style.display = 'block';
         return;
       }
-
+      console.log('[connect-gate] Envoi inscription', email);
       fetch('https://universal-connect.vercel.app/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,21 +53,26 @@
         if (res.ok) {
           localStorage.setItem('hasSubscribed', 'true');
           document.body.removeChild(overlay);
+          console.log('[connect-gate] Inscription réussie, overlay retiré');
         } else {
           error.innerText = "Erreur lors de l'inscription.";
           error.style.display = 'block';
+          console.log('[connect-gate] Erreur API');
         }
       }).catch(function() {
         error.innerText = 'Erreur réseau.';
         error.style.display = 'block';
+        console.log('[connect-gate] Erreur réseau');
       });
     };
 
     document.body.appendChild(overlay);
+    console.log('[connect-gate] Overlay ajouté au body');
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGate);
+    console.log('[connect-gate] En attente du DOM');
   } else {
     initGate();
   }
