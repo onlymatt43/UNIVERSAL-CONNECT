@@ -16,27 +16,6 @@
     for (var i = 0; i < 10; i++) {
       var circle = document.createElement('div');
       var size = Math.random() * 100 + 50;
-    // Input is embedded inside the yellow button (defined below)
-    input.placeholder = 'EMAIL';
-    // Dynamic width based on content, with smooth transition
-    var MIN_W = 180;
-    var MAX_W = Math.min(720, Math.floor(window.innerWidth * 0.9));
-    input.style.cssText = 'height:48px;padding:0 16px;font-size:18px;width:'+MIN_W+'px;max-width:90vw;margin-bottom:20px;border:none;border-radius:9999px;box-shadow:0 0 14px rgba(0,0,0,0.25);position:relative;z-index:1;transition:width 220ms ease, box-shadow 220ms ease;outline:none;background:#fff;color:#111;';
-    var sizer = document.createElement('span');
-    sizer.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:18px;font-weight:400;pointer-events:none;';
-    document.body.appendChild(sizer);
-    function resizeToContent(){
-      sizer.textContent = (input.value && input.value.trim()) ? input.value.trim() : input.placeholder;
-      var natural = Math.ceil(sizer.getBoundingClientRect().width);
-      var next = Math.max(MIN_W, Math.min(MAX_W, natural + 32)); // + padding
-      input.style.width = next + 'px';
-      input.style.boxShadow = (document.activeElement === input || input.value.trim()) ? '0 0 18px rgba(0,0,0,0.35)' : '0 0 14px rgba(0,0,0,0.25)';
-    }
-    input.addEventListener('focus', function(){ resizeToContent(); if (typeof scramble !== 'undefined') { scramble.setTarget('CONNECT TO SUBSCRIBE'); } });
-    input.addEventListener('input', resizeToContent);
-    input.addEventListener('blur', function(){ resizeToContent(); if (!input.value.trim() && typeof scramble !== 'undefined') { scramble.setTarget("YOU'RE AWESOME"); setTimeout(function(){ scramble.setTarget('CONNECT TO SUBSCRIBE'); }, 2000); } });
-    window.addEventListener('resize', resizeToContent);
-    overlay.appendChild(input);
 
     var button = document.createElement('button');
     button.setAttribute('type', 'button');
