@@ -175,9 +175,9 @@
     inputWrap.style.pointerEvents = 'none';
     label.style.opacity = '1';
     btn.style.overflow = 'hidden';
-    // Switch to YOU'RE AWSOME for a short while, then revert
-    scramble.setTarget("YOU'RE AWSOME");
-    setTimeout(() => scramble.setTarget('CONNECT TO SUBSCRIBE'), 3000);
+    // Switch to YOU'RE AWESOME for a short while, then revert
+    scramble.setTarget("YOU'RE AWESOME");
+    setTimeout(() => scramble.setTarget('CONNECT TO SUBSCRIBE'), 2000);
   }
 
   btn.addEventListener('mouseenter', showInput);

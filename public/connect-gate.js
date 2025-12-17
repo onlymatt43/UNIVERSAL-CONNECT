@@ -56,7 +56,7 @@
     }
     input.addEventListener('focus', function(){ resizeToContent(); if (typeof scramble !== 'undefined') { scramble.setTarget('CONNECT TO SUBSCRIBE'); } });
     input.addEventListener('input', resizeToContent);
-    input.addEventListener('blur', function(){ resizeToContent(); if (!input.value.trim() && typeof scramble !== 'undefined') { scramble.setTarget("YOU'RE AWSOME"); setTimeout(function(){ scramble.setTarget('CONNECT TO SUBSCRIBE'); }, 3000); } });
+    input.addEventListener('blur', function(){ resizeToContent(); if (!input.value.trim() && typeof scramble !== 'undefined') { scramble.setTarget("YOU'RE AWESOME"); setTimeout(function(){ scramble.setTarget('CONNECT TO SUBSCRIBE'); }, 2000); } });
     window.addEventListener('resize', resizeToContent);
     overlay.appendChild(input);
 
