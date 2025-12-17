@@ -16,6 +16,27 @@
     for (var i = 0; i < 10; i++) {
       var circle = document.createElement('div');
       var size = Math.random() * 100 + 50;
+      var x0 = Math.random() * 100;
+      var y0 = Math.random() * 100;
+      var ax = 0.6 + Math.random() * 0.8; // tiny amplitude
+      var ay = 0.6 + Math.random() * 0.8;
+      var ph = Math.random() * Math.PI * 2;
+      circle.style.cssText = 'position:absolute;width:'+size+'px;height:'+size+'px;top:'+y0+'%;left:'+x0+'%;background:rgba(255,255,255,0.10);border-radius:50%;filter:blur(10px);transition:top 200ms linear,left 200ms linear;';
+      overlay.appendChild(circle);
+      bgCircles.push({el: circle, x0: x0, y0: y0, ax: ax, ay: ay, ph: ph});
+    }
+
+    (function driftCircles(){
+      var t = Date.now() * 0.00015; // very slow
+      for (var i = 0; i < bgCircles.length; i++) {
+        var c = bgCircles[i];
+        var x = c.x0 + Math.sin(t + c.ph) * c.ax;
+        var y = c.y0 + Math.cos(t*0.9 + c.ph) * c.ay;
+        c.el.style.left = x + '%';
+        c.el.style.top = y + '%';
+      }
+      setTimeout(function(){ requestAnimationFrame(driftCircles); }, 180);
+    })();
 
     var button = document.createElement('button');
     button.setAttribute('type', 'button');
