@@ -48,13 +48,30 @@ export default async function handler(req, res) {
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
 
-    await collection.insertOne({
-      email: email.trim().toLowerCase(),
-      source: source || req.headers.origin || 'unknown',
-      subscribed_at: new Date().toISOString(),
-    });
+    // Ensure unique index on email
+    await collection.createIndex({ email: 1 }, { unique: true });
 
-    return res.status(200).json({ status: 'success' });
+    const normalizedEmail = email.trim().toLowerCase();
+    const now = new Date().toISOString();
+
+    // Upsert - insert if not exists, otherwise do not duplicate
+    const result = await collection.updateOne(
+      { email: normalizedEmail },
+      {
+        $setOnInsert: {
+          email: normalizedEmail,
+          source: source || req.headers.origin || 'unknown',
+          subscribed_at: now,
+        },
+      },
+      { upsert: true }
+    );
+
+    if (result.upsertedCount === 1) {
+      return res.status(200).json({ status: 'success' });
+    }
+    // Already existed
+    return res.status(200).json({ status: 'already' });
   } catch (err) {
     console.error('Erreur MongoDB:', err);
     return res.status(500).json({ error: 'Erreur serveur' });
