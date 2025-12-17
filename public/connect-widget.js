@@ -16,8 +16,10 @@
     'transition: transform 120ms ease'
   ].join(';');
 
-  btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.04)'; });
-  btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1.0)'; });
+  // Subtle breathing (scale + micro-rotation) that composes with hover
+  let hover = false;
+  btn.addEventListener('mouseenter', () => { hover = true; });
+  btn.addEventListener('mouseleave', () => { hover = false; });
 
   // Animated label (short substrings fit inside the circle)
   const label = document.createElement('span');
@@ -76,6 +78,20 @@
       const y = baseY + Math.cos(theta * 0.85) * amp;
       btn.style.background = `radial-gradient(circle at ${x}% ${y}%, #fff 0%, #FFE35C 55%, #FFC107 100%)`;
       setTimeout(() => requestAnimationFrame(step), tickMs);
+    }
+    requestAnimationFrame(step);
+  })();
+
+  // Breathing transform loop (micro rotation + scale), independent cadence
+  (function breathing() {
+    let t = 0;
+    function step() {
+      t += 0.05; // slow
+      const breath = 1 + 0.005 * Math.sin(t); // ~0.5%
+      const rot = 0.5 * Math.sin(t * 0.7); // +/- 0.5deg
+      const scale = (hover ? 1.04 : 1.0) * breath;
+      btn.style.transform = `rotate(${rot.toFixed(3)}deg) scale(${scale.toFixed(3)})`;
+      requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   })();

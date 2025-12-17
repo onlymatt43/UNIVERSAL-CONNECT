@@ -64,8 +64,10 @@
     var label = document.createElement('span');
     label.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;user-select:none;line-height:1;';
     button.appendChild(label);
-    button.onmouseover = function() { this.style.transform = 'scale(1.1)'; };
-    button.onmouseout = function() { this.style.transform = 'scale(1.0)'; };
+    // Compose breathing with hover scaling
+    var hover = false;
+    button.onmouseover = function() { hover = true; };
+    button.onmouseout = function() { hover = false; };
     overlay.appendChild(button);
 
     // Subtle glossy drift on the button
@@ -78,6 +80,20 @@
         var y = baseY + Math.cos(theta*0.85) * amp;
         button.style.background = 'radial-gradient(circle at '+x+'% '+y+'%, #fff 0%, #FFE35C 55%, #FFC107 100%)';
         setTimeout(function(){ requestAnimationFrame(step); }, tickMs);
+      }
+      requestAnimationFrame(step);
+    })();
+
+    // Breathing loop (micro rotation + subtle scale) that composes with hover
+    (function breathing(){
+      var t = 0;
+      function step(){
+        t += 0.05;
+        var breath = 1 + 0.005 * Math.sin(t);
+        var rot = 0.5 * Math.sin(t * 0.7);
+        var scale = (hover ? 1.08 : 1.0) * breath;
+        button.style.transform = 'rotate(' + rot.toFixed(3) + 'deg) scale(' + scale.toFixed(3) + ')';
+        requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
     })();
