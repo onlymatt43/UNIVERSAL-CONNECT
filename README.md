@@ -84,6 +84,17 @@ Exporte tous les abonnés en CSV.
 **Paramètres:**
 - `auth` : Le secret défini dans les variables d'environnement
 
+### DELETE/POST `/api/unsubscribe`
+
+Supprime un abonné par son email.
+
+- En DELETE: `DELETE /api/unsubscribe?email=user@example.com`
+- En POST: Body JSON `{ "email": "user@example.com" }`
+
+Réponses:
+- `{ "status": "deleted" }` si supprimé
+- `{ "status": "not-found" }` si non trouvé
+
 ## 🔐 Interface Admin
 
 Accède à l'interface admin via :

@@ -1,0 +1,52 @@
+import { MongoClient } from 'mongodb';
+
+const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB || 'connect';
+const collectionName = process.env.MONGODB_COLL || 'subscribers';
+
+let cachedClient = null;
+
+async function connectToMongo() {
+  if (cachedClient && cachedClient.topology?.isConnected()) {
+    return cachedClient;
+  }
+  const client = new MongoClient(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  await client.connect();
+  cachedClient = client;
+  return client;
+}
+
+export default async function handler(req, res) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (req.method !== 'DELETE' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Méthode non autorisée' });
+  }
+
+  const email = (req.method === 'DELETE' ? req.query.email : req.body?.email);
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Email requis' });
+  }
+
+  try {
+    const client = await connectToMongo();
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
+
+    const result = await collection.deleteOne({ email: email.trim().toLowerCase() });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ status: 'not-found' });
+    }
+    return res.status(200).json({ status: 'deleted' });
+  } catch (err) {
+    console.error('Erreur MongoDB (delete):', err);
+    return res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
