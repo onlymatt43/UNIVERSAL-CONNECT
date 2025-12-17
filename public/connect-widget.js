@@ -1,29 +1,30 @@
 (function () {
   const TARGET_TEXT = 'CONNECT TO SUBSCRIBE';
 
-  // Container button (pill) with glossy yellow style
+  // Container button (fixed circular) with glossy yellow style
   const btn = document.createElement('button');
   btn.setAttribute('type', 'button');
   btn.setAttribute('aria-label', 'Connect to subscribe');
   btn.style.cssText = [
     'position:fixed', 'top:20px', 'right:20px', 'z-index:99999',
-    'height:56px', 'min-width:300px', 'max-width:80vw', 'padding:0 18px',
-    'border-radius:9999px', 'border:none', 'overflow:hidden',
+    'width:60px', 'height:60px', 'padding:0',
+    'border-radius:50%', 'border:none', 'overflow:hidden',
     'background: radial-gradient(circle at 30% 30%, #fff 0%, #FFE35C 55%, #FFC107 100%)',
-    'color:#111', 'font-weight:700', 'font-size:14px', 'letter-spacing:0.5px', 'text-transform:uppercase',
+    'color:#111', 'font-weight:700', 'font-size:11px', 'letter-spacing:0.5px', 'text-transform:uppercase',
     'box-shadow:0 8px 20px rgba(0,0,0,0.25)', 'cursor:pointer',
-    'display:flex', 'align-items:center', 'justify-content:center', 'gap:8px',
+    'display:flex', 'align-items:center', 'justify-content:center',
     'transition: transform 120ms ease'
   ].join(';');
 
   btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.04)'; });
   btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1.0)'; });
 
-  // Animated label
+  // Animated label (short substrings fit inside the circle)
   const label = document.createElement('span');
   label.style.cssText = [
     'position:absolute', 'inset:0', 'display:flex', 'align-items:center', 'justify-content:center',
-    'padding:0 18px', 'pointer-events:none', 'user-select:none'
+    'padding:0 6px', 'text-align:center', 'pointer-events:none', 'user-select:none',
+    'line-height:1', 'white-space:nowrap'
   ].join(';');
   btn.appendChild(label);
 
@@ -40,9 +41,9 @@
   input.autocomplete = 'email';
   input.inputMode = 'email';
   input.style.cssText = [
-    'height:38px', 'width:84%', 'max-width:520px',
+    'height:30px', 'width:80%',
     'background:rgba(255,255,255,0.95)', 'border:none', 'border-radius:9999px',
-    'padding:0 16px', 'font-size:14px', 'color:#111', 'outline:none',
+    'padding:0 10px', 'font-size:12px', 'color:#111', 'outline:none',
     'box-shadow: inset 0 1px 2px rgba(0,0,0,0.12)'
   ].join(';');
 
@@ -79,35 +80,56 @@
     requestAnimationFrame(step);
   })();
 
-  // Animation: appear/disappear 1-3 letters at a time, looping
-  let visibleLen = 0;
-  let mode = 'type'; // 'type' | 'delete'
-  let pausedUntil = 0;
+  // Animation: organic scramble revealing short substrings inside the circle
+  (function organicScramble() {
+    const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const PADDED = (TARGET_TEXT + '   ' + TARGET_TEXT).toUpperCase();
+    let start = 0;
+    let length = 3; // will vary between 3..5
+    let settleFrames = 14; // frames to settle into target
+    let frame = 0;
+    let target = PADDED.slice(start, start + length);
+    let current = new Array(length).fill(' ');
+    let settled = new Array(length).fill(false);
 
-  function animateLabel(now) {
-    if (!now) now = performance.now();
-    if (now < pausedUntil) {
-      requestAnimationFrame(animateLabel);
-      return;
+    function reseedWindow() {
+      // Advance 1–2 chars, vary length 3–5
+      start = (start + 1 + Math.floor(Math.random() * 2)) % TARGET_TEXT.length;
+      length = 3 + Math.floor(Math.random() * 3); // 3..5
+      target = PADDED.slice(start, start + length);
+      current = new Array(length).fill(' ');
+      settled = new Array(length).fill(false);
+      frame = 0;
     }
-    const step = 1 + Math.floor(Math.random() * 3); // 1..3
-    if (mode === 'type') {
-      visibleLen = Math.min(TARGET_TEXT.length, visibleLen + step);
-      if (visibleLen === TARGET_TEXT.length) {
-        pausedUntil = now + 900; // pause at full
-        mode = 'delete';
+
+    function tick() {
+      frame++;
+      const p = Math.min(1, frame / settleFrames);
+      for (let i = 0; i < length; i++) {
+        if (settled[i]) continue;
+        // More likely to settle as frames progress
+        if (Math.random() < p * 0.55 + (target[i] === ' ' ? 0.3 : 0)) {
+          current[i] = target[i];
+          settled[i] = true;
+        } else {
+          // Random wander character to feel alive
+          current[i] = ABC[Math.floor(Math.random() * ABC.length)];
+        }
       }
-    } else {
-      visibleLen = Math.max(0, visibleLen - step);
-      if (visibleLen === 0) {
-        pausedUntil = now + 500; // pause at empty
-        mode = 'type';
+      label.textContent = current.join('');
+      // If all settled, pause briefly then reseed
+      if (settled.every(Boolean)) {
+        setTimeout(() => {
+          reseedWindow();
+          requestAnimationFrame(tick);
+        }, 500 + Math.random() * 500);
+      } else {
+        setTimeout(() => requestAnimationFrame(tick), 60 + Math.random() * 40);
       }
     }
-    label.textContent = TARGET_TEXT.slice(0, visibleLen);
-    setTimeout(() => requestAnimationFrame(animateLabel), 110); // cadence
-  }
-  requestAnimationFrame(animateLabel);
+
+    requestAnimationFrame(tick);
+  })();
 
   // Hover shows input overlay (same size as button)
   let showingInput = false;
