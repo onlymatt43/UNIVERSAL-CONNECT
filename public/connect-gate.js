@@ -16,29 +16,7 @@
     for (var i = 0; i < 10; i++) {
       var circle = document.createElement('div');
       var size = Math.random() * 100 + 50;
-      var x0 = Math.random() * 100;
-      var y0 = Math.random() * 100;
-      var ax = 0.6 + Math.random() * 0.8; // tiny amplitude
-      var ay = 0.6 + Math.random() * 0.8;
-      var ph = Math.random() * Math.PI * 2;
-      circle.style.cssText = 'position:absolute;width:'+size+'px;height:'+size+'px;top:'+y0+'%;left:'+x0+'%;background:rgba(255,255,255,0.10);border-radius:50%;filter:blur(10px);transition:top 200ms linear,left 200ms linear;';
-      overlay.appendChild(circle);
-      bgCircles.push({el: circle, x0: x0, y0: y0, ax: ax, ay: ay, ph: ph});
-    }
-    (function driftCircles(){
-      var t = Date.now() * 0.00015; // very slow
-      for (var i = 0; i < bgCircles.length; i++) {
-        var c = bgCircles[i];
-        var x = c.x0 + Math.sin(t + c.ph) * c.ax;
-        var y = c.y0 + Math.cos(t*0.9 + c.ph) * c.ay;
-        c.el.style.left = x + '%';
-        c.el.style.top = y + '%';
-      }
-      setTimeout(function(){ requestAnimationFrame(driftCircles); }, 180);
-    })();
-
-    var input = document.createElement('input');
-    input.type = 'email';
+    // Input is embedded inside the yellow button (defined below)
     input.placeholder = 'EMAIL';
     // Dynamic width based on content, with smooth transition
     var MIN_W = 180;
@@ -66,11 +44,77 @@
     var label = document.createElement('span');
     label.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;user-select:none;line-height:1;';
     button.appendChild(label);
+    // Input overlay inside the button
+    var inputWrap = document.createElement('div');
+    inputWrap.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 160ms ease;z-index:2;';
+    var input = document.createElement('input');
+    input.type = 'email';
+    input.placeholder = 'EMAIL';
+    input.autocomplete = 'email';
+    input.inputMode = 'email';
+    input.style.cssText = 'height:30px;background:rgba(255,255,255,0.95);border:none;border-radius:9999px;padding:0 10px;font-size:12px;color:#111;outline:none;box-shadow: inset 0 1px 2px rgba(0,0,0,0.12)';
+    inputWrap.appendChild(input);
+    button.appendChild(inputWrap);
     // Compose breathing with hover scaling
     var hover = false;
     button.onmouseover = function() { hover = true; };
     button.onmouseout = function() { hover = false; };
     overlay.appendChild(button);
+
+    // Hidden sizer to compute natural width of email
+    var sizer = document.createElement('span');
+    sizer.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:12px;font-weight:400;pointer-events:none;';
+    document.body.appendChild(sizer);
+
+    function resizeToContent(){
+      sizer.textContent = (input.value && input.value.trim()) ? input.value.trim() : input.placeholder;
+      var natural = Math.ceil(sizer.getBoundingClientRect().width);
+      var padding = 20; // 10px left + 10px right
+      var minW = 140;
+      var maxW = Math.min(600, Math.floor(window.innerWidth * 0.9));
+      var next = Math.max(minW, Math.min(maxW, natural + padding));
+      input.style.width = next + 'px';
+    }
+
+    // Show/hide input overlay within the button
+    var showingInput = false;
+    function showInput(){
+      if (showingInput) return;
+      showingInput = true;
+      label.style.opacity = '0';
+      inputWrap.style.opacity = '1';
+      inputWrap.style.pointerEvents = 'auto';
+      button.style.overflow = 'visible';
+      setTimeout(function(){ resizeToContent(); input.focus(); }, 10);
+      if (typeof scramble !== 'undefined') scramble.setTarget('CONNECT TO SUBSCRIBE');
+    }
+    function hideInput(){
+      showingInput = false;
+      inputWrap.style.opacity = '0';
+      inputWrap.style.pointerEvents = 'none';
+      label.style.opacity = '1';
+      button.style.overflow = 'hidden';
+      if (typeof scramble !== 'undefined') {
+        scramble.setTarget("YOU'RE AWESOME");
+        setTimeout(function(){ scramble.setTarget('CONNECT TO SUBSCRIBE'); }, 2000);
+      }
+    }
+
+    button.addEventListener('mouseenter', showInput);
+    button.addEventListener('mouseleave', function(){ if (document.activeElement !== input) hideInput(); });
+    input.addEventListener('blur', function(){ setTimeout(function(){ if (!button.matches(':hover')) hideInput(); }, 50); });
+
+    // Auto-submit after short pause when valid, still supports Enter
+    var autoTimer = null;
+    function scheduleAutoSubmit(){
+      if (autoTimer) clearTimeout(autoTimer);
+      var v = (input.value||'').trim();
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        autoTimer = setTimeout(function(){ submitEmail(); }, 800);
+      }
+    }
+    input.addEventListener('input', function(){ resizeToContent(); scheduleAutoSubmit(); });
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); submitEmail(); } });
 
     // Subtle glossy drift on the button
     (function glossyDrift(){
