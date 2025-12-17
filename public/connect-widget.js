@@ -30,20 +30,21 @@
   ].join(';');
   btn.appendChild(label);
 
-  // Input overlay (shown on hover/focus)
+  // Input overlay (shown on hover/focus), can extend beyond circle
   const inputWrap = document.createElement('div');
   inputWrap.style.cssText = [
-    'position:absolute', 'inset:0', 'display:flex', 'align-items:center', 'justify-content:center',
-    'opacity:0', 'pointer-events:none', 'transition: opacity 160ms ease'
+    'position:absolute', 'top:50%', 'left:50%', 'transform:translate(-50%,-50%)',
+    'display:flex', 'align-items:center', 'justify-content:center',
+    'opacity:0', 'pointer-events:none', 'transition: opacity 160ms ease', 'z-index:2'
   ].join(';');
 
   const input = document.createElement('input');
   input.type = 'email';
-  input.placeholder = 'Votre email';
+  input.placeholder = 'EMAIL';
   input.autocomplete = 'email';
   input.inputMode = 'email';
   input.style.cssText = [
-    'height:30px', 'width:80%',
+    'height:30px',
     'background:rgba(255,255,255,0.95)', 'border:none', 'border-radius:9999px',
     'padding:0 10px', 'font-size:12px', 'color:#111', 'outline:none',
     'box-shadow: inset 0 1px 2px rgba(0,0,0,0.12)'
@@ -51,6 +52,14 @@
 
   inputWrap.appendChild(input);
   btn.appendChild(inputWrap);
+
+  // Hidden sizer to compute natural width of email
+  const sizer = document.createElement('span');
+  sizer.style.cssText = [
+    'position:absolute', 'visibility:hidden', 'white-space:pre', 'pointer-events:none',
+    'font-size:12px', 'font-family:inherit', 'font-weight:400'
+  ].join(';');
+  document.body.appendChild(sizer);
 
   // Status message (success/error)
   const status = document.createElement('span');
@@ -155,14 +164,16 @@
     label.style.opacity = '0';
     inputWrap.style.opacity = '1';
     inputWrap.style.pointerEvents = 'auto';
+    btn.style.overflow = 'visible';
     // Focus after a tick to ensure visibility
-    setTimeout(() => input.focus(), 10);
+    setTimeout(() => { resizeToContent(); input.focus(); }, 10);
   }
   function hideInput() {
     showingInput = false;
     inputWrap.style.opacity = '0';
     inputWrap.style.pointerEvents = 'none';
     label.style.opacity = '1';
+    btn.style.overflow = 'hidden';
   }
 
   btn.addEventListener('mouseenter', showInput);
@@ -220,6 +231,27 @@
     }
   }
 
+  // Auto-submit after short pause when valid, still supports Enter
+  let autoTimer = null;
+  function scheduleAutoSubmit() {
+    if (autoTimer) clearTimeout(autoTimer);
+    if (validateEmail(input.value.trim())) {
+      autoTimer = setTimeout(() => submitEmail(), 800); // 0.8s debounce
+    }
+  }
+
+  // Resize input to content width
+  function resizeToContent() {
+    const text = (input.value && input.value.trim()) ? input.value.trim() : input.placeholder;
+    sizer.textContent = text;
+    const natural = Math.ceil(sizer.getBoundingClientRect().width);
+    const padding = 20; // 10px left + 10px right
+    const minW = 140;
+    const maxW = Math.min(600, Math.floor(window.innerWidth * 0.9));
+    const next = Math.max(minW, Math.min(maxW, natural + padding));
+    input.style.width = next + 'px';
+  }
+
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -228,5 +260,13 @@
   });
   input.addEventListener('input', () => {
     input.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.12)';
+    resizeToContent();
+    scheduleAutoSubmit();
+  });
+  input.addEventListener('focus', () => {
+    resizeToContent();
+  });
+  window.addEventListener('resize', () => {
+    if (showingInput || (input.value && input.value.trim())) resizeToContent();
   });
 })();

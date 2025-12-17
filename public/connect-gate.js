@@ -39,23 +39,25 @@
 
     var input = document.createElement('input');
     input.type = 'email';
-    input.placeholder = 'Votre email';
-    // Small pill by default, expands on focus/typing
-    var SMALL_W = 140;
-    function bigWidthPx() { return Math.min(380, Math.max(260, Math.floor(window.innerWidth * 0.8))); }
-    input.style.cssText = 'height:48px;padding:0 16px;font-size:18px;width:'+SMALL_W+'px;max-width:90vw;margin-bottom:20px;border:none;border-radius:9999px;box-shadow:0 0 14px rgba(0,0,0,0.25);position:relative;z-index:1;transition:width 220ms ease, box-shadow 220ms ease;outline:none;background:#fff;color:#111;';
-    function expand() {
-      input.style.width = bigWidthPx() + 'px';
-      input.style.boxShadow = '0 0 18px rgba(0,0,0,0.35)';
+    input.placeholder = 'EMAIL';
+    // Dynamic width based on content, with smooth transition
+    var MIN_W = 180;
+    var MAX_W = Math.min(720, Math.floor(window.innerWidth * 0.9));
+    input.style.cssText = 'height:48px;padding:0 16px;font-size:18px;width:'+MIN_W+'px;max-width:90vw;margin-bottom:20px;border:none;border-radius:9999px;box-shadow:0 0 14px rgba(0,0,0,0.25);position:relative;z-index:1;transition:width 220ms ease, box-shadow 220ms ease;outline:none;background:#fff;color:#111;';
+    var sizer = document.createElement('span');
+    sizer.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:18px;font-weight:400;pointer-events:none;';
+    document.body.appendChild(sizer);
+    function resizeToContent(){
+      sizer.textContent = (input.value && input.value.trim()) ? input.value.trim() : input.placeholder;
+      var natural = Math.ceil(sizer.getBoundingClientRect().width);
+      var next = Math.max(MIN_W, Math.min(MAX_W, natural + 32)); // + padding
+      input.style.width = next + 'px';
+      input.style.boxShadow = (document.activeElement === input || input.value.trim()) ? '0 0 18px rgba(0,0,0,0.35)' : '0 0 14px rgba(0,0,0,0.25)';
     }
-    function collapse() {
-      input.style.width = SMALL_W + 'px';
-      input.style.boxShadow = '0 0 14px rgba(0,0,0,0.25)';
-    }
-    input.addEventListener('focus', expand);
-    input.addEventListener('input', function(){ if (input.value.length>0) expand(); });
-    input.addEventListener('blur', function(){ if (!input.value.trim()) collapse(); });
-    window.addEventListener('resize', function(){ if (document.activeElement === input || input.value.trim()) expand(); });
+    input.addEventListener('focus', resizeToContent);
+    input.addEventListener('input', resizeToContent);
+    input.addEventListener('blur', resizeToContent);
+    window.addEventListener('resize', resizeToContent);
     overlay.appendChild(input);
 
     var button = document.createElement('button');
