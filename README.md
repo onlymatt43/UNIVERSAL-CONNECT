@@ -42,17 +42,17 @@ universal-connect/
 
 ### Bouton rond glossy (haut droite)
 ```html
-<script src="https://universal-connect.vercel.app/connect-widget.js" async></script>
+<script src="https://universal-connect.vercel.app/connect-widget.js?v=6" defer></script>
 ```
 
 ### Barrière d'accès obligatoire (overlay)
 ```html
-<script src="https://universal-connect.vercel.app/connect-gate.js" async></script>
+<script src="https://universal-connect.vercel.app/connect-gate.js?v=6" defer></script>
 ```
 
 ### Intégration WordPress / Breakdance
 1. Va dans **Breakdance > Settings > Custom Code** ou utilise le plugin **WPCode**
-2. Colle le script dans le **Footer**
+2. Colle le script dans le **Footer** et utilise `defer` + un paramètre de version (ex: `?v=6`) pour éviter le cache
 
 ## 🔧 API Endpoints
 
