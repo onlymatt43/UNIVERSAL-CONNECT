@@ -54,9 +54,9 @@
       input.style.width = next + 'px';
       input.style.boxShadow = (document.activeElement === input || input.value.trim()) ? '0 0 18px rgba(0,0,0,0.35)' : '0 0 14px rgba(0,0,0,0.25)';
     }
-    input.addEventListener('focus', resizeToContent);
+    input.addEventListener('focus', function(){ resizeToContent(); if (typeof scramble !== 'undefined') { scramble.setTarget('CONNECT TO SUBSCRIBE'); } });
     input.addEventListener('input', resizeToContent);
-    input.addEventListener('blur', resizeToContent);
+    input.addEventListener('blur', function(){ resizeToContent(); if (!input.value.trim() && typeof scramble !== 'undefined') { scramble.setTarget("YOU'RE AWSOME"); setTimeout(function(){ scramble.setTarget('CONNECT TO SUBSCRIBE'); }, 3000); } });
     window.addEventListener('resize', resizeToContent);
     overlay.appendChild(input);
 
@@ -100,22 +100,27 @@
       requestAnimationFrame(step);
     })();
 
-    // Organic scramble animation inside the circular button
-    (function organicScramble(){
-      var TARGET = 'CONNECT TO SUBSCRIBE';
+    // Organic scramble animation inside the circular button with dynamic target
+    var scramble = (function organicScramble(){
+      var SCR_TARGET = 'CONNECT TO SUBSCRIBE';
       var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      var PAD = (TARGET + '   ' + TARGET).toUpperCase();
+      var PAD = (SCR_TARGET + '   ' + SCR_TARGET).toUpperCase();
       var start = 0, length = 3, settleFrames = 14, frame = 0;
       var target = PAD.slice(start, start + length);
       var current = new Array(length).fill(' ');
       var settled = new Array(length).fill(false);
       function reseed(){
-        start = (start + 1 + Math.floor(Math.random()*2)) % TARGET.length;
+        start = (start + 1 + Math.floor(Math.random()*2)) % SCR_TARGET.length;
         length = 3 + Math.floor(Math.random()*3);
         target = PAD.slice(start, start + length);
         current = new Array(length).fill(' ');
         settled = new Array(length).fill(false);
         frame = 0;
+      }
+      function setTarget(t){
+        SCR_TARGET = (t || 'CONNECT TO SUBSCRIBE').toUpperCase();
+        PAD = (SCR_TARGET + '   ' + SCR_TARGET).toUpperCase();
+        reseed();
       }
       function tick(){
         frame++;
@@ -137,6 +142,7 @@
         }
       }
       requestAnimationFrame(tick);
+      return { setTarget: setTarget };
     })();
 
     var error = document.createElement('p');

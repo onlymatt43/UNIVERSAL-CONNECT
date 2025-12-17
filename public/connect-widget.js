@@ -106,9 +106,10 @@
   })();
 
   // Animation: organic scramble revealing short substrings inside the circle
-  (function organicScramble() {
+  const scramble = (function organicScramble() {
     const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const PADDED = (TARGET_TEXT + '   ' + TARGET_TEXT).toUpperCase();
+    let SCR_TARGET = TARGET_TEXT.toUpperCase();
+    let PADDED = (SCR_TARGET + '   ' + SCR_TARGET).toUpperCase();
     let start = 0;
     let length = 3; // will vary between 3..5
     let settleFrames = 14; // frames to settle into target
@@ -118,8 +119,7 @@
     let settled = new Array(length).fill(false);
 
     function reseedWindow() {
-      // Advance 1–2 chars, vary length 3–5
-      start = (start + 1 + Math.floor(Math.random() * 2)) % TARGET_TEXT.length;
+      start = (start + 1 + Math.floor(Math.random() * 2)) % SCR_TARGET.length;
       length = 3 + Math.floor(Math.random() * 3); // 3..5
       target = PADDED.slice(start, start + length);
       current = new Array(length).fill(' ');
@@ -127,33 +127,34 @@
       frame = 0;
     }
 
+    function setTarget(t) {
+      SCR_TARGET = (t || TARGET_TEXT).toUpperCase();
+      PADDED = (SCR_TARGET + '   ' + SCR_TARGET).toUpperCase();
+      reseedWindow();
+    }
+
     function tick() {
       frame++;
       const p = Math.min(1, frame / settleFrames);
       for (let i = 0; i < length; i++) {
         if (settled[i]) continue;
-        // More likely to settle as frames progress
         if (Math.random() < p * 0.55 + (target[i] === ' ' ? 0.3 : 0)) {
           current[i] = target[i];
           settled[i] = true;
         } else {
-          // Random wander character to feel alive
           current[i] = ABC[Math.floor(Math.random() * ABC.length)];
         }
       }
       label.textContent = current.join('');
-      // If all settled, pause briefly then reseed
       if (settled.every(Boolean)) {
-        setTimeout(() => {
-          reseedWindow();
-          requestAnimationFrame(tick);
-        }, 500 + Math.random() * 500);
+        setTimeout(() => { reseedWindow(); requestAnimationFrame(tick); }, 500 + Math.random() * 500);
       } else {
         setTimeout(() => requestAnimationFrame(tick), 60 + Math.random() * 40);
       }
     }
 
     requestAnimationFrame(tick);
+    return { setTarget };
   })();
 
   // Hover shows input overlay (same size as button)
@@ -174,6 +175,9 @@
     inputWrap.style.pointerEvents = 'none';
     label.style.opacity = '1';
     btn.style.overflow = 'hidden';
+    // Switch to YOU'RE AWSOME for a short while, then revert
+    scramble.setTarget("YOU'RE AWSOME");
+    setTimeout(() => scramble.setTarget('CONNECT TO SUBSCRIBE'), 3000);
   }
 
   btn.addEventListener('mouseenter', showInput);
