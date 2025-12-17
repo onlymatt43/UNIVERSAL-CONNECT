@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test – Connect Gate</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; }
+    .row { margin: 12px 0; }
+    code { background:#f5f5f5; padding:2px 6px; border-radius:4px; }
+    button { padding:10px 14px; cursor:pointer; }
+    .ok { color: #0a7f45; }
+    .warn { color: #b36b00; }
+    .err { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>Test Connect Gate</h1>
+  <p>Cette page teste l'overlay <code>connect-gate.js</code> directement depuis Vercel.</p>
+
+  <div class="row">
+    <button id="clear">Effacer l'état (hasSubscribed) et recharger</button>
+    <span id="state"></span>
+  </div>
+
+  <div class="row">
+    <strong>Scripts chargés:</strong>
+    <ul id="scripts"></ul>
+  </div>
+
+  <div class="row" id="diagnostic"></div>
+
+  <script>
+    // UI helpers
+    const stateEl = document.getElementById('state');
+    const listEl = document.getElementById('scripts');
+    const diagEl = document.getElementById('diagnostic');
+
+    function updateState() {
+      const v = localStorage.getItem('hasSubscribed');
+      stateEl.textContent = 'hasSubscribed=' + (v === null ? 'null' : JSON.stringify(v));
+      stateEl.className = v === 'true' ? 'ok' : 'warn';
+    }
+
+    document.getElementById('clear').onclick = function () {
+      localStorage.removeItem('hasSubscribed');
+      location.reload();
+    };
+
+    // List loaded scripts
+    Array.from(document.scripts).forEach(s => {
+      const li = document.createElement('li');
+      li.textContent = s.src || '[inline script]';
+      listEl.appendChild(li);
+    });
+
+    updateState();
+
+    // If overlay doesn't appear in 3s, show hints
+    setTimeout(() => {
+      if (!document.querySelector('[data-connect-gate-overlay]')) {
+        diagEl.innerHTML = '<p class="err">Overlay non détecté après 3s. Ouvrez la console: vous devriez voir des logs commençant par <code>[connect-gate]</code>.\nEssayez aussi un rechargement forcé (Cmd/Ctrl+Shift+R).</p>';
+      }
+    }, 3000);
+  </script>
+
+  <!-- Gate script with cache-busting + defer to wait DOM -->
+  <script src="/connect-gate.js?v=6" defer></script>
+
+  <!-- Optional: widget for comparaison -->
+  <!-- <script src="/connect-widget.js?v=3" defer></script> -->
+</body>
+</html>
