@@ -8,7 +8,8 @@
   function initGate() {
     console.log('[connect-gate] DOM prêt, création overlay');
     var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;';
+    overlay.setAttribute('data-connect-gate-overlay','1');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;box-sizing:border-box;';
 
     for (var i = 0; i < 10; i++) {
       var circle = document.createElement('div');
@@ -20,7 +21,22 @@
     var input = document.createElement('input');
     input.type = 'email';
     input.placeholder = 'Votre email';
-    input.style.cssText = 'padding:15px;font-size:18px;width:80%;max-width:300px;margin-bottom:20px;border:none;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.2);position:relative;z-index:1;';
+    // Small pill by default, expands on focus/typing
+    var SMALL_W = 140;
+    function bigWidthPx() { return Math.min(380, Math.max(260, Math.floor(window.innerWidth * 0.8))); }
+    input.style.cssText = 'height:48px;padding:0 16px;font-size:18px;width:'+SMALL_W+'px;max-width:90vw;margin-bottom:20px;border:none;border-radius:9999px;box-shadow:0 0 14px rgba(0,0,0,0.25);position:relative;z-index:1;transition:width 220ms ease, box-shadow 220ms ease;outline:none;background:#fff;color:#111;';
+    function expand() {
+      input.style.width = bigWidthPx() + 'px';
+      input.style.boxShadow = '0 0 18px rgba(0,0,0,0.35)';
+    }
+    function collapse() {
+      input.style.width = SMALL_W + 'px';
+      input.style.boxShadow = '0 0 14px rgba(0,0,0,0.25)';
+    }
+    input.addEventListener('focus', expand);
+    input.addEventListener('input', function(){ if (input.value.length>0) expand(); });
+    input.addEventListener('blur', function(){ if (!input.value.trim()) collapse(); });
+    window.addEventListener('resize', function(){ if (document.activeElement === input || input.value.trim()) expand(); });
     overlay.appendChild(input);
 
     var button = document.createElement('button');
@@ -31,7 +47,7 @@
     overlay.appendChild(button);
 
     var error = document.createElement('p');
-    error.style.cssText = 'color:red;display:none;margin-top:10px;position:relative;z-index:1;';
+    error.style.cssText = 'color:#ffb3b3;display:none;margin-top:12px;position:relative;z-index:1;font-size:14px;';
     overlay.appendChild(error);
 
     button.onclick = function () {
