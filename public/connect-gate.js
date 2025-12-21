@@ -242,6 +242,10 @@
         return;
       }
       console.log('[connect-gate] Envoi inscription', email);
+      // Disable button to prevent double submission
+      button.style.pointerEvents = 'none';
+      input.disabled = true;
+      
       fetch('https://universal-connect.vercel.app/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -252,22 +256,29 @@
       }).then(function(res) {
         if (res.ok) {
           localStorage.setItem('hasSubscribed', 'true');
+          console.log('[connect-gate] Inscription réussie, début fade-out');
           // Smooth fade-out animation
-          overlay.style.transition = 'opacity 0.4s ease-out, backdrop-filter 0.4s ease-out';
+          overlay.style.transition = 'opacity 0.5s ease-out, backdrop-filter 0.5s ease-out';
           overlay.style.opacity = '0';
           overlay.style.backdropFilter = 'blur(0px)';
           setTimeout(function() {
-            document.body.removeChild(overlay);
-            console.log('[connect-gate] Inscription réussie, overlay retiré');
-          }, 400);
+            if (overlay && overlay.parentNode) {
+              overlay.parentNode.removeChild(overlay);
+              console.log('[connect-gate] Overlay retiré du DOM');
+            }
+          }, 500);
         } else {
           error.innerText = "Erreur lors de l'inscription.";
           error.style.display = 'block';
+          button.style.pointerEvents = 'auto';
+          input.disabled = false;
           console.log('[connect-gate] Erreur API');
         }
       }).catch(function() {
         error.innerText = 'Erreur réseau.';
         error.style.display = 'block';
+        button.style.pointerEvents = 'auto';
+        input.disabled = false;
         console.log('[connect-gate] Erreur réseau');
       });
     }
