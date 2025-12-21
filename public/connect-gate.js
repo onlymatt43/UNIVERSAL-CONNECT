@@ -61,6 +61,47 @@
     button.onmouseout = function() { hover = false; };
     overlay.appendChild(button);
 
+    // Satellite buttons orbiting around main button
+    var satellites = [
+      { text: 'ONLYFANS', url: 'https://onlyfans.com/onlymatt43', angle: 0 },
+      { text: 'PAYPAL', url: 'https://paypal.me/onlymatt43', angle: 120 },
+      { text: 'JUSTFORFANS', url: 'https://justfor.fans/onlymatt43', angle: 240 }
+    ];
+    var satButtons = [];
+    var orbitRadius = 140; // Distance from center
+    
+    satellites.forEach(function(sat) {
+      var satBtn = document.createElement('a');
+      satBtn.href = sat.url;
+      satBtn.target = '_blank';
+      satBtn.rel = 'noopener noreferrer';
+      satBtn.style.cssText = 'position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#FFE35C 55%,#FFC107 100%);color:#111;font-weight:700;font-size:9px;letter-spacing:0.3px;text-transform:uppercase;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:1;transition:transform 0.2s ease;';
+      satBtn.textContent = sat.text;
+      satBtn.onmouseover = function() { this.style.transform = 'scale(1.1)'; };
+      satBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+      overlay.appendChild(satBtn);
+      satButtons.push({ el: satBtn, baseAngle: sat.angle });
+    });
+
+    // Orbit animation for satellites
+    (function orbitSatellites(){
+      var t = 0;
+      function step(){
+        t += 0.008; // Slow orbit speed
+        var centerX = window.innerWidth / 2;
+        var centerY = window.innerHeight / 2;
+        satButtons.forEach(function(sat) {
+          var angle = (sat.baseAngle + t * 40) * Math.PI / 180; // Convert to radians
+          var x = centerX + Math.cos(angle) * orbitRadius - 30; // -30 to center the 60px button
+          var y = centerY + Math.sin(angle) * orbitRadius - 30;
+          sat.el.style.left = x + 'px';
+          sat.el.style.top = y + 'px';
+        });
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    })();
+
     // Hidden sizer to compute natural width of email
     var sizer = document.createElement('span');
     sizer.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:12px;font-weight:400;pointer-events:none;';
