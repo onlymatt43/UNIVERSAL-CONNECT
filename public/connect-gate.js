@@ -63,9 +63,9 @@
 
     // Satellite buttons orbiting around main button
     var satellites = [
-      { text: 'ONLYFANS', url: 'https://onlyfans.com/onlymatt43', angle: 0 },
+      { text: 'ONLYFANS', url: 'https://onlyfans.com/onlymatt-43', angle: 0 },
       { text: 'PAYPAL', url: 'https://paypal.me/onlymatt43', angle: 120 },
-      { text: 'JUSTFORFANS', url: 'https://justfor.fans/onlymatt43', angle: 240 }
+      { text: 'JUSTFORFANS', url: 'https://justfor.fans/OnlyMatt43', angle: 240 }
     ];
     var satButtons = [];
     var orbitRadius = 140; // Distance from center
