@@ -211,8 +211,14 @@
       }).then(function(res) {
         if (res.ok) {
           localStorage.setItem('hasSubscribed', 'true');
-          document.body.removeChild(overlay);
-          console.log('[connect-gate] Inscription réussie, overlay retiré');
+          // Smooth fade-out animation
+          overlay.style.transition = 'opacity 0.4s ease-out, backdrop-filter 0.4s ease-out';
+          overlay.style.opacity = '0';
+          overlay.style.backdropFilter = 'blur(0px)';
+          setTimeout(function() {
+            document.body.removeChild(overlay);
+            console.log('[connect-gate] Inscription réussie, overlay retiré');
+          }, 400);
         } else {
           error.innerText = "Erreur lors de l'inscription.";
           error.style.display = 'block';
