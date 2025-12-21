@@ -193,9 +193,9 @@
     error.style.cssText = 'color:#ffb3b3;display:none;margin-top:12px;position:relative;z-index:1;font-size:14px;';
     overlay.appendChild(error);
 
-    button.onclick = function () {
+    function submitEmail() {
       var email = input.value.trim();
-      if (!email) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         error.innerText = 'Veuillez entrer un email valide.';
         error.style.display = 'block';
         return;
@@ -223,7 +223,9 @@
         error.style.display = 'block';
         console.log('[connect-gate] Erreur réseau');
       });
-    };
+    }
+
+    button.onclick = submitEmail;
 
     document.body.appendChild(overlay);
     console.log('[connect-gate] Overlay ajouté au body');
