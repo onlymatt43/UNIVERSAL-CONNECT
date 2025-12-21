@@ -9,7 +9,7 @@
     console.log('[connect-gate] DOM prêt, création overlay');
     var overlay = document.createElement('div');
     overlay.setAttribute('data-connect-gate-overlay','1');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;box-sizing:border-box;';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;box-sizing:border-box;';
 
     // Soft white blurred circles with ultra-slow drift
     var bgCircles = [];
@@ -80,32 +80,78 @@
     var satButtons = [];
     var orbitRadius = 140; // Distance from center
     
+    var mouseX = window.innerWidth / 2;
+    var mouseY = window.innerHeight / 2;
+    
+    document.addEventListener('mousemove', function(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
     satellites.forEach(function(sat) {
       var satBtn = document.createElement('a');
       satBtn.href = sat.url;
       satBtn.target = '_blank';
       satBtn.rel = 'noopener noreferrer';
-      satBtn.style.cssText = 'position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#FFE35C 55%,#FFC107 100%);color:#111;font-weight:700;font-size:9px;letter-spacing:0.3px;text-transform:uppercase;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:1;transition:transform 0.2s ease;';
-      satBtn.textContent = sat.text;
-      satBtn.onmouseover = function() { this.style.transform = 'scale(1.1)'; };
-      satBtn.onmouseout = function() { this.style.transform = 'scale(1)'; };
+      satBtn.style.cssText = 'position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#FFE35C 55%,#FFC107 100%);color:#111;font-weight:700;font-size:9px;letter-spacing:0.3px;text-transform:uppercase;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:1;transition:left 0.15s ease-out, top 0.15s ease-out;';
+      
+      var textSpan = document.createElement('span');
+      textSpan.style.cssText = 'pointer-events:none;user-select:none;';
+      satBtn.appendChild(textSpan);
+      
       overlay.appendChild(satBtn);
-      satButtons.push({ el: satBtn, baseAngle: sat.angle });
+      satButtons.push({ el: satBtn, baseAngle: sat.angle, text: sat.text, textEl: textSpan });
     });
 
-    // Orbit animation for satellites
+    // Text scramble animation for satellites
+    (function scrambleSatellites(){
+      var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      satButtons.forEach(function(sat) {
+        var chars = sat.text.split('');
+        var displayed = chars.slice();
+        
+        function scrambleChar() {
+          var idx = Math.floor(Math.random() * chars.length);
+          if (Math.random() < 0.15) {
+            displayed[idx] = Math.random() < 0.7 ? chars[idx] : ABC[Math.floor(Math.random() * ABC.length)];
+            sat.textEl.textContent = displayed.join('');
+          }
+          setTimeout(scrambleChar, 800 + Math.random() * 1200);
+        }
+        scrambleChar();
+      });
+    })();
+
+    // Ultra-slow orbit animation with mouse dodge
     (function orbitSatellites(){
       var t = 0;
       function step(){
-        t += 0.008; // Slow orbit speed
+        t += 0.0008; // Ultra slow orbit (10x slower)
         var centerX = window.innerWidth / 2;
         var centerY = window.innerHeight / 2;
+        
         satButtons.forEach(function(sat) {
-          var angle = (sat.baseAngle + t * 40) * Math.PI / 180; // Convert to radians
-          var x = centerX + Math.cos(angle) * orbitRadius - 30; // -30 to center the 60px button
-          var y = centerY + Math.sin(angle) * orbitRadius - 30;
-          sat.el.style.left = x + 'px';
-          sat.el.style.top = y + 'px';
+          var angle = (sat.baseAngle + t * 40) * Math.PI / 180;
+          var baseX = centerX + Math.cos(angle) * orbitRadius;
+          var baseY = centerY + Math.sin(angle) * orbitRadius;
+          
+          // Calculate distance from mouse
+          var dx = baseX - mouseX;
+          var dy = baseY - mouseY;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Dodge effect: push away if mouse is close
+          var dodgeRadius = 80;
+          var dodgeAmount = 0;
+          if (dist < dodgeRadius && dist > 0) {
+            dodgeAmount = (1 - dist / dodgeRadius) * 25; // Max 25px push
+          }
+          
+          var finalX = baseX + (dx / dist) * dodgeAmount - 30;
+          var finalY = baseY + (dy / dist) * dodgeAmount - 30;
+          
+          sat.el.style.left = finalX + 'px';
+          sat.el.style.top = finalY + 'px';
         });
         requestAnimationFrame(step);
       }
