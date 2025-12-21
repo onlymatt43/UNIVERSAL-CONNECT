@@ -74,7 +74,7 @@
     // Satellite buttons orbiting around main button
     var satellites = [
       { text: 'ONLYFANS', url: 'https://onlyfans.com/onlymatt-43', angle: 0 },
-      { text: 'PAYPAL', url: 'https://paypal.me/onlymatt43', angle: 120 },
+      { text: 'PAYPALME', url: 'https://paypal.me/onlymatt43', angle: 120 },
       { text: 'JUSTFORFANS', url: 'https://justfor.fans/OnlyMatt43', angle: 240 }
     ];
     var satButtons = [];
@@ -95,30 +95,52 @@
       satBtn.rel = 'noopener noreferrer';
       satBtn.style.cssText = 'position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#FFE35C 55%,#FFC107 100%);color:#111;font-weight:700;font-size:9px;letter-spacing:0.3px;text-transform:uppercase;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:1;transition:left 0.15s ease-out, top 0.15s ease-out;';
       
-      var textSpan = document.createElement('span');
-      textSpan.style.cssText = 'pointer-events:none;user-select:none;';
-      satBtn.appendChild(textSpan);
+      var textContainer = document.createElement('span');
+      textContainer.style.cssText = 'pointer-events:none;user-select:none;display:inline-block;';
+      satBtn.appendChild(textContainer);
       
       overlay.appendChild(satBtn);
-      satButtons.push({ el: satBtn, baseAngle: sat.angle, text: sat.text, textEl: textSpan });
+      satButtons.push({ el: satBtn, baseAngle: sat.angle, text: sat.text, container: textContainer });
     });
 
-    // Text scramble animation for satellites
-    (function scrambleSatellites(){
-      var ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    // Individual letter fade in/out animation
+    (function animateLetters(){
       satButtons.forEach(function(sat) {
-        var chars = sat.text.split('');
-        var displayed = chars.slice();
+        var letters = sat.text.split('');
+        var letterSpans = [];
         
-        function scrambleChar() {
-          var idx = Math.floor(Math.random() * chars.length);
-          if (Math.random() < 0.15) {
-            displayed[idx] = Math.random() < 0.7 ? chars[idx] : ABC[Math.floor(Math.random() * ABC.length)];
-            sat.textEl.textContent = displayed.join('');
+        // Create a span for each letter
+        letters.forEach(function(letter) {
+          var span = document.createElement('span');
+          span.textContent = letter;
+          span.style.cssText = 'display:inline-block;opacity:0;transition:opacity 0.8s ease-in-out;';
+          sat.container.appendChild(span);
+          letterSpans.push(span);
+        });
+        
+        // Animate each letter independently
+        letterSpans.forEach(function(span) {
+          function fadeLoop() {
+            // Random delay before fade in
+            var delayBefore = Math.random() * 2000 + 500;
+            setTimeout(function() {
+              // Fade in
+              span.style.opacity = '1';
+              
+              // Random duration visible
+              var visibleDuration = Math.random() * 3000 + 1500;
+              setTimeout(function() {
+                // Fade out
+                span.style.opacity = '0';
+                
+                // Random duration invisible
+                var invisibleDuration = Math.random() * 2500 + 1000;
+                setTimeout(fadeLoop, invisibleDuration);
+              }, visibleDuration);
+            }, delayBefore);
           }
-          setTimeout(scrambleChar, 800 + Math.random() * 1200);
-        }
-        scrambleChar();
+          fadeLoop();
+        });
       });
     })();
 
