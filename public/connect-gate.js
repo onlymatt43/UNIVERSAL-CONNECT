@@ -55,6 +55,16 @@
     input.style.cssText = 'height:30px;background:rgba(255,255,255,0.95);border:none;border-radius:9999px;padding:0 10px;font-size:12px;color:#111;outline:none;box-shadow: inset 0 1px 2px rgba(0,0,0,0.12)';
     inputWrap.appendChild(input);
     button.appendChild(inputWrap);
+    
+    // Honeypot field to catch bots
+    var honeypot = document.createElement('input');
+    honeypot.type = 'text';
+    honeypot.name = 'website';
+    honeypot.autocomplete = 'off';
+    honeypot.tabIndex = -1;
+    honeypot.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+    overlay.appendChild(honeypot);
+    
     // Compose breathing with hover scaling
     var hover = false;
     button.onmouseover = function() { hover = true; };
@@ -236,6 +246,21 @@
 
     function submitEmail() {
       var email = input.value.trim();
+      
+      // Bot detection: if honeypot is filled, reject silently
+      if (honeypot.value) {
+        console.log('[connect-gate] Bot détecté (honeypot rempli)');
+        localStorage.setItem('hasSubscribed', 'true');
+        overlay.style.transition = 'opacity 0.5s ease-out';
+        overlay.style.opacity = '0';
+        setTimeout(function() {
+          if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 500);
+        return;
+      }
+      
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         error.innerText = 'Veuillez entrer un email valide.';
         error.style.display = 'block';
